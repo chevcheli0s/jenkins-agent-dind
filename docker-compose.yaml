@@ -1,0 +1,13 @@
+version: '3'
+services:
+  oneshot:
+    image: ubuntu
+    environment:
+      TEST:
+    command: sh -c 'echo $$TEST'
+  longrunning:
+    image: ubuntu
+    depends_on:
+      oneshot:
+        condition: service_completed_successfully
+    command: sleep infinity

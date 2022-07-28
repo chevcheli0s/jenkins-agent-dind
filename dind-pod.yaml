@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dind
+spec:
+  containers:
+  - name: dind
+    image: ghcr.io/felipecrs/jenkins-agent-dind:latest
+    imagePullPolicy: Always
+    securityContext:
+      privileged: true
+    workingDir: /home/jenkins/agent
+    volumeMounts:
+      - mountPath: /home/jenkins/agent
+        name: workspace-volume
+      # - mountPath: /lib/modules
+      #   name: lib-modules
+      #   readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: sys-fs-cgroup
+    resources:
+      requests:
+        memory: "7G"
+        ephemeral-storage: "8Gi"
+        cpu: "1.75"
+      limits:
+        memory: "7G"
+        ephemeral-storage: "8Gi"
+        cpu: "1.75"
+    args: [sleep, infinity]
+  hostNetwork: false
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  dnsPolicy: Default
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 60
+  # terminationMessagePolicy: FallbackToLogsOnError
+  volumes:
+    - name: workspace-volume
+      emptyDir: {}
+    # - name: lib-modules
+    #   hostPath:
+    #     path: /lib/modules
+    #     type: Directory
+    - name: sys-fs-cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory

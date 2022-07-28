@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    imagePullPolicy: Always
+    resources:
+      requests:
+        memory: "1G"
+        ephemeral-storage: "1Gi"
+        cpu: "1"
+      limits:
+        memory: "1G"
+        ephemeral-storage: "1Gi"
+        cpu: "1"
+    args: [sleep, infinity]
