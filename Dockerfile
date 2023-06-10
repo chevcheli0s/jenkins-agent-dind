@@ -62,7 +62,7 @@ ARG NPM_PREFIX="${HOME}/.npm"
 ENV AGENT_WORKDIR="${HOME}/agent" \
     CI=true \
     PATH="${NPM_PREFIX}/bin:${HOME}/.local/bin:${PATH}" \
-    JAVA_HOME="/usr/lib/jvm/temurin-11-jdk-amd64" \
+    JAVA_HOME="/usr/lib/jvm/temurin-11-jdk-${TARGETARCH}" \
     # locale and encoding \
     LANG="en_US.UTF-8" \
     LANGUAGE="en_US:en" \
@@ -103,6 +103,7 @@ WORKDIR "${AGENT_WORKDIR}"
 
 VOLUME "${AGENT_WORKDIR}"
 
+ARG TARGETARCH
 RUN \
     # ensure jenkins-agent directory exists \
     mkdir -p "${AGENT_WORKDIR}"; \
@@ -193,7 +194,7 @@ RUN \
     sudo usermod -aG docker "${NON_ROOT_USER}"; \
     ## setup docker-switch (docker-compose v1 compatibility) \
     version=$(basename "$(${CURL} -o /dev/null -w "%{url_effective}" https://github.com/docker/compose-switch/releases/latest)"); \
-    sudo ${CURL} --create-dirs -o "/usr/local/bin/docker-compose" "https://github.com/docker/compose-switch/releases/download/${version}/docker-compose-$(uname -s)-amd64"; \
+    sudo ${CURL} --create-dirs -o "/usr/local/bin/docker-compose" "https://github.com/docker/compose-switch/releases/download/${version}/docker-compose-linux-${TARGETARCH}"; \
     sudo chmod +x /usr/local/bin/docker-compose; \
     ## dind \
     # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box \
@@ -241,23 +242,23 @@ RUN \
     ## miscellaneous \
     # install kind \
     version=$(basename "$(${CURL} -o /dev/null -w "%{url_effective}" https://github.com/kubernetes-sigs/kind/releases/latest)"); \
-    sudo ${CURL} -o /usr/local/bin/kind "https://github.com/kubernetes-sigs/kind/releases/download/${version}/kind-$(uname)-amd64"; \
+    sudo ${CURL} -o /usr/local/bin/kind "https://github.com/kubernetes-sigs/kind/releases/download/${version}/kind-linux-${TARGETARCH}"; \
     sudo chmod +x /usr/local/bin/kind; \
     # install hadolint \
     version=$(basename "$(${CURL} -o /dev/null -w "%{url_effective}" https://github.com/hadolint/hadolint/releases/latest)"); \
-    sudo ${CURL} -o /usr/local/bin/hadolint "https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64"; \
+    sudo ${CURL} -o /usr/local/bin/hadolint "https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-$(uname -m)"; \
     sudo chmod +x /usr/local/bin/hadolint; \
     # install helm 3 \
     ${CURL} https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | sudo -E bash -; \
     # install s6-overlay \
-    ${CURL} -o /tmp/s6-overlay-installer https://github.com/just-containers/s6-overlay/releases/download/v2.2.0.1/s6-overlay-amd64-installer; \
+    ${CURL} -o /tmp/s6-overlay-installer https://github.com/just-containers/s6-overlay/releases/download/v2.2.0.1/s6-overlay-${TARGETARCH}-installer; \
     chmod +x /tmp/s6-overlay-installer; \
     sudo /tmp/s6-overlay-installer /; \
     rm -f /tmp/s6-overlay-installer; \
     # fix sshd not starting \
     sudo mkdir -p /run/sshd; \
     # install fixuid \
-    curl -fsSL https://github.com/boxboat/fixuid/releases/download/v0.5.1/fixuid-0.5.1-linux-amd64.tar.gz | sudo tar -C /usr/local/bin -xzf -; \
+    curl -fsSL https://github.com/boxboat/fixuid/releases/download/v0.5.1/fixuid-0.5.1-linux-${TARGET_ARCH}.tar.gz | sudo tar -C /usr/local/bin -xzf -; \
     sudo chown root:root /usr/local/bin/fixuid;\
     sudo chmod 4755 /usr/local/bin/fixuid; \
     sudo mkdir -p /etc/fixuid; \
