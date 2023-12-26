@@ -37,10 +37,11 @@ FROM base
 
 ENV NON_ROOT_USER="jenkins"
 ARG HOME="/home/${NON_ROOT_USER}"
+ARG TARGETARCH
 
 ENV AGENT_WORKDIR="${HOME}/agent"
 ENV CI="true"
-ENV EDITOR="nano"
+ENV EDITOR="vim"
 ENV PATH="${HOME}/.local/bin:${PATH}:/opt/java/openjdk/bin"
 ## Locale and encoding
 ENV LANG="en_US.UTF-8"
@@ -126,6 +127,7 @@ RUN group="${NON_ROOT_USER}"; \
         netcat \
         openssh-server \
         nano \
+	vim \
         # required for docker in docker \
         iptables \
         btrfs-progs \
@@ -140,7 +142,7 @@ RUN group="${NON_ROOT_USER}"; \
     usermod -aG docker "${NON_ROOT_USER}"; \
     ## setup docker-switch (for docker-compose v1 compatibility) \
     version=$(basename "$(${CURL} -o /dev/null -w "%{url_effective}" https://github.com/docker/compose-switch/releases/latest)"); \
-    ${CURL} --create-dirs -o "/usr/local/bin/docker-compose" "https://github.com/docker/compose-switch/releases/download/${version}/docker-compose-$(uname -s)-amd64"; \
+    ${CURL} --create-dirs -o "/usr/local/bin/docker-compose" "https://github.com/docker/compose-switch/releases/download/${version}/docker-compose-linux-${TARGETARCH}"; \
     chmod +x /usr/local/bin/docker-compose; \
     ## dind \
     # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box \
@@ -165,14 +167,14 @@ RUN group="${NON_ROOT_USER}"; \
     version="3.1.6.2"; \
     ${CURL} "https://github.com/just-containers/s6-overlay/releases/download/v${version}/s6-overlay-noarch.tar.xz" \
         | tar -C / -Jxpf -; \
-    ${CURL} "https://github.com/just-containers/s6-overlay/releases/download/v${version}/s6-overlay-x86_64.tar.xz" \
+    ${CURL} "https://github.com/just-containers/s6-overlay/releases/download/v${version}/s6-overlay-$(uname -m).tar.xz" \
         | tar -C / -Jxpf -; \
     # fix sshd not starting \
     mkdir -p /run/sshd; \
     # install fixuid \
     # https://github.com/boxboat/fixuid/releases \
     version="0.6.0" ; \
-    curl -fsSL "https://github.com/boxboat/fixuid/releases/download/v${version}/fixuid-${version}-linux-amd64.tar.gz" | tar -C /usr/local/bin -xzf -; \
+    curl -fsSL "https://github.com/boxboat/fixuid/releases/download/v${version}/fixuid-${version}-linux-$(uname -m).tar.gz" | tar -C /usr/local/bin -xzf -; \
     chown root:root /usr/local/bin/fixuid;\
     chmod 4755 /usr/local/bin/fixuid; \
     mkdir -p /etc/fixuid; \
