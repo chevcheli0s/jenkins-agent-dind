@@ -174,7 +174,7 @@ RUN group="${NON_ROOT_USER}"; \
     # install fixuid \
     # https://github.com/boxboat/fixuid/releases \
     version="0.6.0" ; \
-    curl -fsSL "https://github.com/boxboat/fixuid/releases/download/v${version}/fixuid-${version}-linux-$(uname -m).tar.gz" | tar -C /usr/local/bin -xzf -; \
+    curl -fsSL "https://github.com/boxboat/fixuid/releases/download/v${version}/fixuid-${version}-linux-${TARGETARCH}.tar.gz" | tar -C /usr/local/bin -xzf -; \
     chown root:root /usr/local/bin/fixuid;\
     chmod 4755 /usr/local/bin/fixuid; \
     mkdir -p /etc/fixuid; \
